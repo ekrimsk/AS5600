@@ -319,3 +319,41 @@ void AS5600::_writeRegister(byte registerAddress, byte value) {
 	Wire.endTransmission();
 }
 
+
+
+// Added by Erez Krimsky, 7/21/21
+#ifdef AS5600L
+/*
+*  
+* --------------------------------------
+*
+*
+*/
+bool AS5600::setI2CAddress(byte newAddress) {
+  // If MSB ever written to 0 cannot be changed to 1 
+  // to prevent this, lets ONLY allow addresses with MSB = 1 
+  // PERMANENT CHANGE 
+
+  // NOTE: should limit this to 0x40, 0x41, 0x42...0x45 to 
+  // to avoid confusion 
+
+  /*
+
+  // Step 1 - Write new address to I2CADDR 
+  _writeRegister(_I2CADDR, newAddress); // datasheet page 28 
+
+  // Page 27 footnote 3 -- except for MSB, ANY bit written to 1 cannot be 
+  // written back to 0 
+
+  // Step 2 - Perform Burn Settings to make permanent
+  // page 24 "To perform a BURN_SETTING command, write the value 0x40 into register 0xFF."
+  _writeRegister(_BURNAddress, 0x40); 
+
+  */ 
+
+  return false;  // TODO -- actually check the code 
+
+
+}
+
+#endif

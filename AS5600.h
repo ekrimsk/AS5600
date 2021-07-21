@@ -8,6 +8,8 @@
 #ifndef AS5600_h
 #define AS5600_h
 
+#define AS5600L   // Comment out to use other versions 
+
 #include "Arduino.h"
 #include <Wire.h>
 
@@ -72,10 +74,24 @@ class AS5600
 
     uint8_t getCONF();
 
-    
+    #ifdef AS5600L
+      bool setI2CAddress(byte address); 
+    #endif 
 
     private:
-      int _AS5600Address = 0x36; // I2C address for AS5600
+
+      #ifdef AS5600L
+        int _AS5600Address = 0x40; // DEFAULT I2C address for AS5600
+        int _AS5600AddressDefault = 0x40;  // 1000000b 
+
+        // Additional registers we need 
+        byte _I2CADDR = 0x20;  // NOTE: bit positions 1 though 7 
+        byte _I2CUPDT = 0x20;  // NOTE: bit positions 1 though 7 
+
+
+      #else
+        int _AS5600Address = 0x36; // I2C address register for AS5600
+      #endif 
 
       byte _ZMCOAddress = 0x00;
       byte _ZPOSAddressMSB = 0x01;
