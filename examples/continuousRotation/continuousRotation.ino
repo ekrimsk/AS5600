@@ -1,15 +1,21 @@
+
+
 #include <AS5600.h>
 
 AS5600 encoder;
 
 long revolutions = 0;   // number of revolutions the encoder has made
 double position = 0;    // the calculated value the encoder is at
+
+double angle; 
+
+
 double output;          // raw value from AS5600
 long lastOutput;        // last output from AS5600
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   output = encoder.getPosition();
   lastOutput = output;
@@ -26,8 +32,10 @@ void loop() {
     
   position = revolutions * 4096 + output;   // calculate the position the the encoder is at based off of the number of revolutions
 
-  Serial.println(position);
+
+
+  Serial.print("Revolutions: "); Serial.println(revolutions);
+  Serial.print("Angle: "); Serial.println(360.0*output/4096.0); 
 
   lastOutput = output;                      // save the last raw value for the next loop 
 }
-
