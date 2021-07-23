@@ -329,31 +329,63 @@ void AS5600::_writeRegister(byte registerAddress, byte value) {
 *
 *
 */
-bool AS5600::setI2CAddress(byte newAddress) {
+bool AS5600::changeI2CAddress(byte newAddress) {
   // If MSB ever written to 0 cannot be changed to 1 
   // to prevent this, lets ONLY allow addresses with MSB = 1 
   // PERMANENT CHANGE 
 
-  // NOTE: should limit this to 0x40, 0x41, 0x42...0x45 to 
-  // to avoid confusion 
+  // NOTE: should limit this to 0x40, 0x41, 0x42...0x44 to 
+  // to avoid confusion -- each of these sets the MSB and only one other 
+  // bit to 1 
+  
+  // 0x40, 0x41, 0x42, 0x44, 0x48, 0x50
+  if ((newAddress == 0x40) || (newAddress == 0x41) || (newAddress == 0x42) ||
+      (newAddress == 0x44) || (newAddress == 0x48) || (newAddress == 0x50))
+  {
 
-  /*
+    // address should be 7 bit anyway for I2C 
 
-  // Step 1 - Write new address to I2CADDR 
-  _writeRegister(_I2CADDR, newAddress); // datasheet page 28 
+    // From the datasheet, we are not supposed to modify unused bits in the register map
+    // this would include bit 0 for the I2C addres 
+    // so, do read modify write 
 
-  // Page 27 footnote 3 -- except for MSB, ANY bit written to 1 cannot be 
-  // written back to 0 
+    byte init_byte = _getRegister(_I2CADDR);
 
-  // Step 2 - Perform Burn Settings to make permanent
-  // page 24 "To perform a BURN_SETTING command, write the value 0x40 into register 0xFF."
-  _writeRegister(_BURNAddress, 0x40); 
+    // & 0x01 --> clears all the bits except in position 0 
+    // then or it with the address left shifted 
+    byte outbyte = (newAddress << 1) | (0x01 & init_byte);
 
-  */ 
+    // Step 1 - Write new address to I2CADDR 
+    // Register map on page 19 -- write address to bit positions 1-7 (bit 0 unused)
+    // Left shift by 1 to do this 
+    _writeRegister(_I2CADDR, outbyte); // datasheet page 28 
 
-  return false;  // TODO -- actually check the code 
+    // Page 27 footnote 3 -- except for MSB, ANY bit written to 1 cannot be 
+    // written back to 0 
+
+    // Step 2 - Perform Burn Settings to make permanent
+    // page 24 "To perform a BURN_SETTING command, write the value 0x40 into register 0xFF."
+    _writeRegister(_BURNAddress, 0x40); 
+
+    // NOTE: burn also burns in any other setting bit which has been changed to 1 
+
+    // change locally because otherwise comms will drop after the burn 
+    setI2CAddress(newAddress); 
+     // NOTE: presumably the address doesnt change until we do the burn, otherwise the the second write will fail 
+    return true;
+  } else {
+    return false; 
+  }
 
 
+
+}
+
+
+void AS5600::setI2CAddress(byte newAddress) {
+  // changes the address WE WILL BE CALLING on the bus 
+  // does NOT perform a burn operation and actually change the address of the IC 
+  _AS5600Address = newAddress;
 }
 
 #endif

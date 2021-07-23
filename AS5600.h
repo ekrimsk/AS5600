@@ -75,7 +75,8 @@ class AS5600
     uint8_t getCONF();
 
     #ifdef AS5600L
-      bool setI2CAddress(byte address); 
+      void setI2CAddress(byte address); 
+      bool changeI2CAddress(byte address); 
     #endif 
 
     private:
