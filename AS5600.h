@@ -55,14 +55,19 @@ class AS5600
     float getScaledAngle();
 
     uint8_t getStatus();
-    uint8_t getGain();
+    uint8_t getGain();    // gets AGC value 
     uint8_t getMagnet();
     uint16_t getMagnitude();
     void setZero(); // still to be implemented
 
+
+
+
+
     bool isMagnetTooStrong();
     bool isMagnetTooWeak();
     bool isMagnetDetected();
+
 
     bool setPowerMode(uint8_t powerMode);
     bool setHysteresis(uint8_t hysteresis);
@@ -108,7 +113,8 @@ class AS5600
       byte _ANGLEAddressMSB = 0x0E;
       byte _ANGLEAddressLSB = 0x0F;
       byte _STATUSAddress = 0x0B;
-      byte _AGCAddress = 0x1A;
+      byte _AGCAddress = 0x1A;   // automatic gain control, should 0-255 for 5V, should be close to 128 
+
       byte _MAGNITUDEAddressMSB = 0x1B;
       byte _MAGNITUDEAddressLSB = 0x1C;
       byte _BURNAddress = 0xFF;

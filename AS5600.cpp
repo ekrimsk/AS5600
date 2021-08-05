@@ -2,6 +2,7 @@
 #include "AS5600.h"
 
 AS5600::AS5600() {
+  // NOTE: will defualt startup to whatever address is stored in the address register 
   Wire.begin();
 }
 
@@ -322,6 +323,9 @@ void AS5600::_writeRegister(byte registerAddress, byte value) {
 
 
 // Added by Erez Krimsky, 7/21/21
+
+
+
 #ifdef AS5600L
 /*
 *  
@@ -338,9 +342,10 @@ bool AS5600::changeI2CAddress(byte newAddress) {
   // to avoid confusion -- each of these sets the MSB and only one other 
   // bit to 1 
   
-  // 0x40, 0x41, 0x42, 0x44, 0x48, 0x50
+  // 0x40, 0x41, 0x42, 0x44, 0x48, 0x50, 0x60
   if ((newAddress == 0x40) || (newAddress == 0x41) || (newAddress == 0x42) ||
-      (newAddress == 0x44) || (newAddress == 0x48) || (newAddress == 0x50))
+      (newAddress == 0x44) || (newAddress == 0x48) || (newAddress == 0x50) ||
+      (newAddress == 0x60))
   {
 
     // address should be 7 bit anyway for I2C 
@@ -353,15 +358,19 @@ bool AS5600::changeI2CAddress(byte newAddress) {
 
     // & 0x01 --> clears all the bits except in position 0 
     // then or it with the address left shifted 
-    byte outbyte = (newAddress << 1) | (0x01 & init_byte);
+    byte address_outbyte = (newAddress << 1) | (0x01 & init_byte);
 
     // Step 1 - Write new address to I2CADDR 
     // Register map on page 19 -- write address to bit positions 1-7 (bit 0 unused)
     // Left shift by 1 to do this 
-    _writeRegister(_I2CADDR, outbyte); // datasheet page 28 
+    _writeRegister(_I2CADDR, address_outbyte); // datasheet page 28 
 
     // Page 27 footnote 3 -- except for MSB, ANY bit written to 1 cannot be 
     // written back to 0 
+
+    // From datasheet on burning angle, seems may need to wait at least 1 ms 
+    delay(2);
+
 
     // Step 2 - Perform Burn Settings to make permanent
     // page 24 "To perform a BURN_SETTING command, write the value 0x40 into register 0xFF."
@@ -370,8 +379,8 @@ bool AS5600::changeI2CAddress(byte newAddress) {
     // NOTE: burn also burns in any other setting bit which has been changed to 1 
 
     // change locally because otherwise comms will drop after the burn 
-    setI2CAddress(newAddress); 
-     // NOTE: presumably the address doesnt change until we do the burn, otherwise the the second write will fail 
+    setI2CAddress(newAddress);  // NEED TO RESTART THE DEVICE ANYWAY!!!!
+    // NOTE: presumably the address doesnt change until we do the burn, otherwise the the second write will fail 
     return true;
   } else {
     return false; 
@@ -384,7 +393,7 @@ bool AS5600::changeI2CAddress(byte newAddress) {
 
 void AS5600::setI2CAddress(byte newAddress) {
   // changes the address WE WILL BE CALLING on the bus 
-  // does NOT perform a burn operation and actually change the address of the IC 
+  // does NOT perform a burn operation and actually change the address of the I2C 
   _AS5600Address = newAddress;
 }
 
